@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liber Syntauri — Panel Interno</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+
+  :root{
+    --bg:#0c0a08; --surface:#161210; --surface2:#211b16; --surface3:#2b231b;
+    --border:#3a3020; --border-lit:#574627;
+    --gold:#cBa653; --gold-bright:#e8c874; --gold-dim:#7a6330;
+    --text:#ece3cc; --text-dim:#998c72; --text-faint:#6b6150;
+    --red:#cf6b5b; --green:#6cab8e; --amber:#d9a441;
+    --radius:7px; --r-lg:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(ellipse at 15% -10%, #1d1812 0%, transparent 55%),
+      radial-gradient(ellipse at 110% 120%, #1a130c 0%, transparent 50%),
+      var(--bg);
+    color:var(--text); font-family:'EB Garamond',Georgia,serif; font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--gold-dim)}
+
+  .layout{display:grid;grid-template-columns:330px 1fr;height:100vh}
+
+  /* ── SIDEBAR ── */
+  .sidebar{background:linear-gradient(180deg,var(--surface) 0%,#100c0a 100%);
+    border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  .sb-head{padding:22px 22px 16px;border-bottom:1px solid var(--border);position:relative}
+  .sb-head::after{content:'';position:absolute;left:22px;right:22px;bottom:-1px;height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .glyph{font-size:26px;color:var(--gold);line-height:1;text-shadow:0 0 18px rgba(203,166,83,.35)}
+  .brand h1{font-family:'Cinzel',serif;font-size:14px;letter-spacing:3.5px;color:var(--gold-bright);text-transform:uppercase;font-weight:600}
+  .brand p{font-size:12px;color:var(--text-faint);letter-spacing:1px;margin-top:2px}
+
+  .controls{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:9px}
+  .search-wrap{position:relative}
+  .search-wrap .ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:13px;pointer-events:none}
+  input,select,textarea{font-family:inherit}
+  .controls input,.controls select{width:100%;background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);padding:8px 11px;border-radius:var(--radius);font-size:14px;transition:border-color .2s}
+  .controls input{padding-left:30px}
+  .controls input:focus,.controls select:focus{outline:none;border-color:var(--border-lit)}
+  .seg{display:flex;gap:5px}
+  .seg button{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+    padding:6px 4px;border-radius:var(--radius);font-family:'Cinzel',serif;font-size:10px;letter-spacing:1px;
+    cursor:pointer;transition:all .15s;text-transform:uppercase}
+  .seg button.on{background:var(--surface3);border-color:var(--gold-dim);color:var(--gold-bright)}
+
+  .prog{padding:13px 20px;border-bottom:1px solid var(--border)}
+  .prog-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .prog-top .lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:1.5px;color:var(--text-faint);text-transform:uppercase}
+  .prog-top .val{font-size:13px;color:var(--gold)}
+  .prog-track{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright));
+    border-radius:3px;transition:width .5s ease;width:0;box-shadow:0 0 8px rgba(203,166,83,.4)}
+  .prog-pct{font-size:11px;color:var(--text-faint);margin-top:5px;text-align:right}
+
+  .list{overflow-y:auto;flex:1;padding:6px 0}
+  .row{padding:10px 18px;cursor:pointer;display:flex;align-items:center;gap:11px;
+    border-left:3px solid transparent;transition:background .14s,border-color .14s;position:relative}
+  .row:hover{background:var(--surface2)}
+  .row.on{background:var(--surface2);border-left-color:var(--gold)}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px rgba(0,0,0,.25)}
+  .row .meta{flex:1;min-width:0}
+  .row .nm{font-family:'Cinzel',serif;font-size:13px;color:var(--gold-bright);letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .dt{font-size:12px;color:var(--text-faint)}
+  .row .ord{font-size:10px;color:var(--text-faint);font-family:'Cinzel',serif;width:22px;text-align:right;flex-shrink:0}
+  .cnt{font-size:10.5px;color:var(--text-dim);background:var(--surface3);border:1px solid var(--border);
+    padding:2px 7px;border-radius:11px;flex-shrink:0;font-variant-numeric:tabular-nums}
+  .cnt.full{color:var(--green);border-color:#2f4d3e}
+
+  .elem-Fuego{background:#d4622a} .elem-Agua{background:#3a6f9a}
+  .elem-Aire{background:#7eb8c9} .elem-Tierra{background:#8b6f3e}
+  .fg-Fuego{color:#e08a52} .fg-Agua{color:#6b9cc4} .fg-Aire{color:#a6d4e0} .fg-Tierra{color:#b89254}
+
+  /* ── MAIN ── */
+  .main{display:flex;flex-direction:column;overflow:hidden}
+  .banner{margin:16px 30px 0;border-radius:var(--radius);padding:13px 18px;font-size:14px;display:none}
+  .banner.show{display:block}
+  .banner.warn{background:#241612;border:1px solid #5a3528;color:#e8b09c}
+  .banner.ok{background:#13211a;border:1px solid #2f4d3e;color:#9cd4b6}
+  .banner code{background:#0008;padding:2px 7px;border-radius:4px;color:var(--gold);font-size:12.5px}
+  .banner b{color:var(--gold-bright)}
+
+  .mhead{padding:22px 30px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:18px;position:relative}
+  .mhead::after{content:'';position:absolute;left:30px;right:30px;bottom:-1px;height:1px;
+    background:linear-gradient(90deg,var(--gold-dim),transparent 70%)}
+  .mhead .big{flex:1}
+  .mhead h2{font-family:'Cinzel',serif;font-size:23px;color:var(--gold-bright);letter-spacing:1px;font-weight:600}
+  .mhead .sub{font-size:14px;color:var(--text-dim);margin-top:3px}
+  .mhead .sub .sep{color:var(--border-lit);margin:0 8px}
+  .mini-prog{text-align:right}
+  .mini-prog .n{font-family:'Cinzel',serif;font-size:20px;color:var(--gold)}
+  .mini-prog .l{font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase}
+
+  .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--text-faint);text-align:center;padding:40px}
+  .empty .sym{font-size:64px;opacity:.22;line-height:1}
+  .empty h3{font-family:'Cinzel',serif;font-size:16px;letter-spacing:2px;color:var(--text-dim);font-weight:400}
+  .empty p{font-size:14px;max-width:360px;line-height:1.6}
+  .spinner{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:11px;padding:22px 30px;overflow-y:auto;flex:1;align-content:start}
+  .card{background:linear-gradient(160deg,var(--surface) 0%,#120e0b 100%);border:1px solid var(--border);
+    border-radius:var(--radius);padding:13px 14px;cursor:pointer;transition:all .16s;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--c,transparent);opacity:.55}
+  .card:hover{border-color:var(--border-lit);background:linear-gradient(160deg,var(--surface2),#16110c);transform:translateY(-1px)}
+  .card .ord{font-size:10px;color:var(--text-faint);font-family:'Cinzel',serif;letter-spacing:1px}
+  .card .nm{font-family:'Cinzel',serif;font-size:14px;color:var(--gold-bright);margin:3px 0 5px;letter-spacing:.5px}
+  .card .pair{font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:6px}
+  .card .pair .x{color:var(--text-faint)}
+  .card .dates{font-size:11px;color:var(--text-faint);margin-top:4px}
+  .card.done{border-color:#2f4d3e}
+  .card.done::after{content:'✦';position:absolute;top:10px;right:11px;color:var(--green);font-size:13px}
+  .card .tt{font-size:11.5px;color:var(--gold-dim);font-style:italic;margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:0}
+
+  /* ── MODAL ── */
+  .ov{position:fixed;inset:0;background:rgba(6,4,3,.8);backdrop-filter:blur(3px);z-index:100;
+    display:none;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .2s}
+  .ov.open{display:flex;opacity:1}
+  .modal{background:linear-gradient(170deg,var(--surface) 0%,#100c0a 100%);border:1px solid var(--border-lit);
+    border-radius:var(--r-lg);width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;
+    overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.65),0 0 0 1px rgba(203,166,83,.06)}
+  .mh{padding:20px 26px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;background:var(--surface)}
+  .mh h3{font-family:'Cinzel',serif;font-size:19px;color:var(--gold-bright);flex:1;letter-spacing:.5px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .mh .pid{font-size:11px;color:var(--text-faint);font-family:'Cinzel'}
+  .x-btn{background:none;border:none;color:var(--text-faint);font-size:26px;cursor:pointer;line-height:1;padding:0 4px;transition:color .15s}
+  .x-btn:hover{color:var(--gold)}
+
+  .ctx{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+  .ctx .pan{background:#120e0b;padding:14px 22px}
+  .ctx .pan h4{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .ctx .pan h4 .d{width:8px;height:8px;border-radius:50%}
+  .crow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px solid rgba(58,48,32,.45)}
+  .crow .k{color:var(--text-faint);white-space:nowrap}
+  .crow .v{color:var(--text);text-align:right}
+  .ctx .frase{margin-top:9px;font-size:12.5px;color:var(--text-dim);font-style:italic;line-height:1.5}
+
+  .inter{padding:13px 26px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:13px;line-height:1.55}
+  .inter .tag{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--bg);
+    background:var(--gold-dim);padding:2px 8px;border-radius:10px;margin-right:9px}
+  .inter b{font-family:'Cinzel',serif;color:var(--gold-bright);font-size:13px}
+  .inter .dsc{color:var(--text-dim);display:block;margin-top:4px}
+
+  .form{padding:20px 26px;overflow-y:auto;display:flex;flex-direction:column;gap:15px}
+  .fg{display:flex;flex-direction:column;gap:6px}
+  .fg label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold-dim);text-transform:uppercase;display:flex;justify-content:space-between}
+  .fg label .hint{color:var(--text-faint);letter-spacing:.5px;text-transform:none;font-family:'EB Garamond';font-style:italic;font-size:12px}
+  .fg input,.fg textarea{background:#0a0806;border:1px solid var(--border);color:var(--text);padding:11px 14px;
+    border-radius:var(--radius);font-size:16px;line-height:1.6;resize:vertical;transition:border-color .2s}
+  .fg input:focus,.fg textarea:focus{outline:none;border-color:var(--gold-dim);box-shadow:0 0 0 3px rgba(203,166,83,.07)}
+  textarea.big{min-height:150px} textarea.sm{min-height:66px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+
+  .mf{padding:15px 26px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--surface);gap:14px}
+  .status{font-size:13px;color:var(--text-dim);display:flex;align-items:center;gap:8px;min-height:18px}
+  .status.ok{color:var(--green)} .status.err{color:var(--red)} .status.busy{color:var(--amber)}
+  .mf .acts{display:flex;gap:10px}
+  .btn{padding:10px 24px;border-radius:var(--radius);border:none;font-family:'Cinzel',serif;font-size:12px;
+    letter-spacing:1.5px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+  .btn-p{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1208;font-weight:600;box-shadow:0 2px 12px rgba(203,166,83,.2)}
+  .btn-p:hover{filter:brightness(1.08);transform:translateY(-1px)}
+  .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn-s{background:transparent;border:1px solid var(--border);color:var(--text-dim)}
+  .btn-s:hover{border-color:var(--gold-dim);color:var(--text)}
+  .toggle-done{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-dim);cursor:pointer;user-select:none}
+  .toggle-done input{width:16px;height:16px;accent-color:var(--gold)}
+
+  @media(max-width:820px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:fixed;z-index:50;width:330px;height:100vh;transform:translateX(-100%);transition:transform .25s}
+    .sidebar.open{transform:none}
+    .ctx,.grid2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- ════ CONFIG: pega tus credenciales ════ -->
+<script>
+  const SUPABASE_URL = 'https://mfxvfbwgcsgnubtfdcyj.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1meHZmYndnY3NnbnVidGZkY3lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNTk4ODIsImV4cCI6MjA5NTkzNTg4Mn0.IPkkOTYM1H3SzE3Az5E49FR6LwMLSQ6kMm-Ye9T_-nE'; // service_role (solo panel interno, NUNCA en la app pública)
+</script>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <div class="brand">
+        <span class="glyph">☉</span>
+        <div><h1>Liber Syntauri</h1><p>Panel interno · 72 espíritus</p></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <span class="ico">⌕</span>
+        <input id="search" placeholder="Buscar signo…" autocomplete="off">
+      </div>
+      <select id="fElem">
+        <option value="">Todos los elementos</option>
+        <option value="Fuego">🜂 Fuego</option>
+        <option value="Agua">🜄 Agua</option>
+        <option value="Aire">🜁 Aire</option>
+        <option value="Tierra">🜃 Tierra</option>
+      </select>
+      <div class="seg" id="segEstado">
+        <button class="on" data-v="">Todas</button>
+        <button data-v="pendiente">Pendientes</button>
+        <button data-v="completas">Completas</button>
+      </div>
+    </div>
+
+    <div class="prog">
+      <div class="prog-top"><span class="lbl">Progreso total</span><span class="val" id="pVal">0 / 5184</span></div>
+      <div class="prog-track"><div class="prog-fill" id="pFill"></div></div>
+      <div class="prog-pct" id="pPct">0.0 %</div>
+    </div>
+
+    <div class="list" id="list"></div>
+  </aside>
+
+  <main class="main">
+    <div class="banner warn" id="bWarn">
+      <b>⚠ Configura Supabase</b> — edita el archivo y reemplaza
+      <code>TU_PROJECT_ID</code> y <code>TU_SERVICE_ROLE_KEY</code>. Mientras tanto verás datos de demostración.
+    </div>
+    <div class="banner ok" id="bOk"></div>
+
+    <div class="mhead" id="mhead" style="display:none">
+      <div class="big">
+        <h2 id="mTitle">—</h2>
+        <div class="sub" id="mSub"></div>
+      </div>
+      <div class="mini-prog"><div class="n" id="mCount">0/72</div><div class="l">combinaciones</div></div>
+    </div>
+
+    <div class="empty" id="empty">
+      <div class="sym">☽</div>
+      <h3>Selecciona un espíritu</h3>
+      <p id="emptyMsg">Elige un signo del panel izquierdo para editar sus 72 combinaciones diarias.</p>
+    </div>
+
+    <div class="grid" id="grid" style="display:none"></div>
+  </main>
+</div>
+
+<!-- ════ MODAL EDITOR ════ -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <div class="mh">
+      <h3 id="modTitle">—</h3>
+      <button class="x-btn" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="ctx">
+      <div class="pan" id="ctxP"></div>
+      <div class="pan" id="ctxD"></div>
+    </div>
+    <div class="inter" id="inter"></div>
+
+    <div class="form">
+      <div class="fg">
+        <label>Título de la combinación <span class="hint">nombre poético del cruce</span></label>
+        <input id="fTitulo" placeholder="Ej: El León que bebe del Pozo del Búho">
+      </div>
+      <div class="fg">
+        <label>Texto principal del día <span class="hint">3–5 frases</span></label>
+        <textarea id="fTexto" class="big" placeholder="La lectura completa del día…"></textarea>
+      </div>
+      <div class="grid2">
+        <div class="fg">
+          <label>Tensión / dinámica <span class="hint">1–2 frases</span></label>
+          <textarea id="fTension" class="sm" placeholder="La fricción entre estos dos espíritus…"></textarea>
+        </div>
+        <div class="fg">
+          <label>Don de la combinación <span class="hint">1 frase</span></label>
+          <textarea id="fDon" class="sm" placeholder="El don único del encuentro…"></textarea>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Sombra de la combinación <span class="hint">1 frase</span></label>
+        <textarea id="fSombra" class="sm" placeholder="El riesgo amplificado…"></textarea>
+      </div>
+      <div class="fg">
+        <label>Frase del día <span class="hint">aforismo de cierre</span></label>
+        <input id="fFrase" placeholder="La frase final del horóscopo…">
+      </div>
+    </div>
+
+    <div class="mf">
+      <div class="status" id="status"></div>
+      <div style="display:flex;align-items:center;gap:18px">
+        <label class="toggle-done"><input type="checkbox" id="fDone"> Marcar completada</label>
+        <div class="acts">
+          <button class="btn btn-s" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-p" id="saveBtn" onclick="save()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════ API ════════
+const CONFIGURED = !SUPABASE_URL.includes('TU_PROJECT_ID');
+const headers = {'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json'};
+const api = {
+  async get(t,q=''){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}?${q}`,{headers});if(!r.ok)throw new Error(await r.text());return r.json();},
+  async upsert(t,d){const r=await fetch(`${SUPABASE_URL}/rest/v1/${t}`,{method:'POST',
+    headers:{...headers,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(d)});
+    if(!r.ok)throw new Error(await r.text());return true;}
+};
+
+// ════════ STATE ════════
+let signos=[], inter={}, combos={}, active=null, editing=null;
+const MESES=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const fdate=s=>{if(!s)return'';const[m,d]=s.split('-');return`${+d} ${MESES[+m]}`;};
+const el=id=>document.getElementById(id);
+
+// ════════ INIT ════════
+async function init(){
+  if(!CONFIGURED){ el('bWarn').classList.add('show'); loadMock(); return; }
+  el('empty').innerHTML='<div class="spinner"></div><p>Cargando espíritus desde Supabase…</p>';
+  try{
+    signos = await api.get('signos','select=*&order=orden');
+    (await api.get('interacciones_elementos','select=*'))
+      .forEach(i=>inter[`${i.elemento_personal}-${i.elemento_dia}`]=i);
+    (await api.get('combinaciones','select=signo_personal_id,signo_dia_id,completado,titulo'))
+      .forEach(c=>combos[`${c.signo_personal_id}-${c.signo_dia_id}`]=c);
+    el('empty').innerHTML='<div class="sym">☽</div><h3>Selecciona un espíritu</h3><p>Elige un signo del panel izquierdo para editar sus 72 combinaciones.</p>';
+    renderList(); updateProgress();
+    showOk(`Conectado · ${signos.length} signos · ${Object.keys(combos).length} combinaciones guardadas`);
+  }catch(e){
+    console.error(e);
+    el('bWarn').classList.add('show');
+    el('bWarn').innerHTML='<b>⚠ Error de conexión</b> — revisa URL/clave o las políticas RLS. Mostrando datos demo. <code>'+String(e.message||e).slice(0,120)+'</code>';
+    loadMock();
+  }
+}
+function showOk(msg){const b=el('bOk');b.textContent='✦ '+msg;b.classList.add('show');setTimeout(()=>b.classList.remove('show'),4000);}
+
+function loadMock(){
+  signos=[
+    {id:1,orden:1,nombre:'Fratsen',fecha_inicio:'01-01',fecha_fin:'01-06',elemento:'Fuego',dominio:'Inicio, enfoque, autoridad del verbo creador',animal:'León Solar',arbol:'Roble Primordial',energia_dominante:'Expansión iniciática',don_del_alma:'Abrir puertas donde nadie veía caminos',mision:'Activar el primer pulso del despertar colectivo',color:'Dorado naciente',frase:'El camino ya fue abierto antes de que dieras el primer paso.'},
+    {id:2,orden:2,nombre:'Sochi',fecha_inicio:'01-07',fecha_fin:'01-12',elemento:'Aire',dominio:'Desplazamiento sagrado, transición, palabra viva',animal:'Caballo de Viaje',arbol:'Álamo',energia_dominante:'Movimiento consciente',don_del_alma:'Abrir caminos y traducir emociones en verdad',mision:'Conectar almas, rutas y frecuencias',color:'Verde áureo',frase:'El alma que sabe hacia dónde va jamás se pierde.'},
+    {id:3,orden:3,nombre:'Kronfa',fecha_inicio:'01-13',fecha_fin:'01-18',elemento:'Agua',dominio:'Clarividencia, intuición pura',animal:'Búho',arbol:'Sauce',energia_dominante:'Clarividencia',don_del_alma:'Leer los movimientos invisibles del destino',mision:'Revelar las señales ocultas',color:'Azul plateado',frase:'El alma que contempla en silencio escucha la voz del tiempo.'},
+    {id:5,orden:5,nombre:'Acrama',fecha_inicio:'01-25',fecha_fin:'01-30',elemento:'Tierra',dominio:'Sanación, conocimiento del cuerpo',animal:'Lince',arbol:'Caléndula',energia_dominante:'Sanación y restauración',don_del_alma:'Restablecer equilibrio donde hay dolor',mision:'Restaurar la armonía física y energética',color:'Dorado ámbar',frase:'El cuerpo recuerda aquello que el alma jamás olvidó.'},
+  ];
+  inter['Fuego-Aire']={titulo:'El Viento que Aviva la Llama',descripcion:'El aire del día alimenta tu fuego personal. Todo se acelera.',advertencia:'La velocidad puede dispersar la energía.',don:'Ideal para comunicar y difundir.'};
+  inter['Fuego-Agua']={titulo:'El Vapor que Transforma',descripcion:'El fuego personal choca con la profundidad del día. Es alquimia.',advertencia:'Puede surgir frustración.',don:'Decisiones con raíz emocional verdadera.'};
+  inter['Fuego-Tierra']={titulo:'La Raíz que Sostiene la Llama',descripcion:'El fuego encuentra base sólida.',advertencia:'La tierra puede sentirse pesada.',don:'Todo lo que hagas hoy tiene permanencia.'};
+  inter['Fuego-Fuego']={titulo:'La Llama que se Multiplica',descripcion:'La energía se amplifica en todas direcciones.',advertencia:'El exceso de fuego quema sin dirección.',don:'Días ideales para decisiones importantes.'};
+  combos['1-2']={completado:true,titulo:'La Llama que Encuentra el Viento'};
+  renderList(); updateProgress();
+}
+
+// ════════ SIDEBAR LIST ════════
+function doneCount(pid){return Object.keys(combos).filter(k=>k.startsWith(pid+'-')&&combos[k].completado).length;}
+function getEstado(){return document.querySelector('#segEstado button.on').dataset.v;}
+
+function renderList(){
+  const q=el('search').value.trim().toLowerCase(), fe=el('fElem').value, est=getEstado();
+  const rows=signos.filter(s=>{
+    if(q && !s.nombre.toLowerCase().includes(q))return false;
+    if(fe && s.elemento!==fe)return false;
+    if(est){const d=doneCount(s.id);if(est==='completas'&&d<72)return false;if(est==='pendiente'&&d===72)return false;}
+    return true;
+  });
+  el('list').innerHTML = rows.map(s=>{
+    const d=doneCount(s.id), on=active&&active.id===s.id?'on':'';
+    return `<div class="row ${on}" onclick="select(${s.id})">
+      <span class="ord">${String(s.orden).padStart(2,'0')}</span>
+      <span class="dot elem-${s.elemento}"></span>
+      <span class="meta"><span class="nm">${s.nombre}</span><span class="dt">${fdate(s.fecha_inicio)} – ${fdate(s.fecha_fin)} · <span class="fg-${s.elemento}">${s.elemento}</span></span></span>
+      <span class="cnt ${d===72?'full':''}">${d}/72</span></div>`;
+  }).join('') || `<div style="padding:30px 18px;text-align:center;color:var(--text-faint);font-size:14px">Sin resultados</div>`;
+}
+
+// ════════ SELECT → GRID ════════
+function select(id){
+  active = signos.find(s=>s.id===id);
+  el('empty').style.display='none'; el('mhead').style.display='flex'; el('grid').style.display='grid';
+  el('mTitle').textContent=active.nombre;
+  el('mSub').innerHTML=`<span class="fg-${active.elemento}">${active.elemento}</span><span class="sep">·</span>${fdate(active.fecha_inicio)} – ${fdate(active.fecha_fin)}<span class="sep">·</span>${active.dominio||''}`;
+  renderGrid(); renderList();
+}
+function renderGrid(){
+  const est=getEstado();
+  el('grid').innerHTML = signos.map(d=>{
+    const key=`${active.id}-${d.id}`, c=combos[key], done=c&&c.completado;
+    if(est==='completas'&&!done)return''; if(est==='pendiente'&&done)return'';
+    const elemColor={Fuego:'#d4622a',Agua:'#3a6f9a',Aire:'#7eb8c9',Tierra:'#8b6f3e'}[d.elemento];
+    return `<div class="card ${done?'done':''}" style="--c:${elemColor}" onclick="openEditor(${active.id},${d.id})">
+      <div class="ord">${active.nombre} × ${d.nombre}</div>
+      <div class="nm">${d.nombre}</div>
+      <div class="pair"><span class="dot elem-${active.elemento}" style="width:7px;height:7px"></span><span class="x">×</span><span class="dot elem-${d.elemento}" style="width:7px;height:7px"></span>
+        <span style="margin-left:3px;font-size:11px">${active.elemento} × ${d.elemento}</span></div>
+      <div class="dates">${fdate(d.fecha_inicio)} – ${fdate(d.fecha_fin)}</div>
+      ${done&&c.titulo?`<div class="tt">"${c.titulo}"</div>`:''}
+    </div>`;
+  }).join('');
+  el('mCount').textContent=`${doneCount(active.id)}/72`;
+}
+
+// ════════ EDITOR ════════
+async function openEditor(pid,did){
+  const P=signos.find(s=>s.id===pid), D=signos.find(s=>s.id===did);
+  const I=inter[`${P.elemento}-${D.elemento}`];
+  editing={pid,did};
+  el('modTitle').innerHTML=`${P.nombre} <span style="color:var(--text-faint)">×</span> ${D.nombre} <span class="pid">#${pid}×${did}</span>`;
+  const pan=(s,role)=>`<h4><span class="d elem-${s.elemento}"></span>${role} — ${s.nombre}</h4>
+    ${crow('Fechas',`${fdate(s.fecha_inicio)} – ${fdate(s.fecha_fin)}`)}
+    ${crow('Elemento',`<span class="fg-${s.elemento}">${s.elemento}</span>`)}
+    ${crow('Energía',s.energia_dominante||'—')}
+    ${crow('Animal',s.animal||'—')}${crow('Árbol',s.arbol||'—')}
+    ${s.frase?`<div class="frase">"${s.frase}"</div>`:''}`;
+  el('ctxP').innerHTML=pan(P,'Personal'); el('ctxD').innerHTML=pan(D,'Día');
+  el('inter').innerHTML = I
+    ? `<span class="tag">${P.elemento} × ${D.elemento}</span><b>${I.titulo||''}</b><span class="dsc">${I.descripcion||''}</span>`
+    : `<span class="tag">${P.elemento} × ${D.elemento}</span><span class="dsc">Sin interacción elemental definida.</span>`;
+
+  // load existing
+  let ex=combos[`${pid}-${did}`]&&combos[`${pid}-${did}`].texto!==undefined?combos[`${pid}-${did}`]:null;
+  if(CONFIGURED){
+    try{const r=await api.get('combinaciones',`signo_personal_id=eq.${pid}&signo_dia_id=eq.${did}&select=*`);ex=r[0]||null;}catch(e){}
+  }
+  el('fTitulo').value=ex?.titulo||''; el('fTexto').value=ex?.texto||'';
+  el('fTension').value=ex?.tension||''; el('fDon').value=ex?.don_combinacion||'';
+  el('fSombra').value=ex?.sombra_combinacion||''; el('fFrase').value=ex?.frase_dia||'';
+  el('fDone').checked=ex?.completado??false;
+  setStatus(''); el('ov').classList.add('open');
+}
+const crow=(k,v)=>`<div class="crow"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+function setStatus(msg,cls=''){const s=el('status');s.textContent=msg;s.className='status '+cls;}
+
+async function save(){
+  if(!editing)return;
+  const btn=el('saveBtn'); btn.disabled=true; setStatus('Guardando…','busy');
+  const texto=el('fTexto').value.trim();
+  const payload={
+    signo_personal_id:editing.pid, signo_dia_id:editing.did,
+    titulo:el('fTitulo').value.trim()||null, texto:texto||null,
+    tension:el('fTension').value.trim()||null, don_combinacion:el('fDon').value.trim()||null,
+    sombra_combinacion:el('fSombra').value.trim()||null, frase_dia:el('fFrase').value.trim()||null,
+    completado:el('fDone').checked, updated_at:new Date().toISOString()
+  };
+  const key=`${editing.pid}-${editing.did}`;
+  try{
+    if(CONFIGURED) await api.upsert('combinaciones',payload);
+    combos[key]={...combos[key],...payload};
+    setStatus(CONFIGURED?'✦ Guardado en Supabase':'✦ Guardado (demo)','ok');
+    renderGrid(); renderList(); updateProgress();
+    setTimeout(()=>{ if(el('ov').classList.contains('open')) closeModal(); },650);
+  }catch(e){
+    console.error(e); setStatus('✗ Error: '+String(e.message||e).slice(0,80),'err');
+  }finally{ btn.disabled=false; }
+}
+function closeModal(){el('ov').classList.remove('open');editing=null;}
+
+// ════════ PROGRESS ════════
+function updateProgress(){
+  const total=72*72, done=Object.values(combos).filter(c=>c.completado).length;
+  const pct=(done/total*100);
+  el('pVal').textContent=`${done} / ${total}`;
+  el('pFill').style.width=pct+'%';
+  el('pPct').textContent=pct.toFixed(1)+' %';
+}
+
+// ════════ EVENTS ════════
+el('search').addEventListener('input',renderList);
+el('fElem').addEventListener('change',()=>{renderList();if(active)renderGrid();});
+document.querySelectorAll('#segEstado button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#segEstado button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); renderList(); if(active)renderGrid();
+}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+el('ov').addEventListener('click',e=>{if(e.target===el('ov'))closeModal();});
+
+init();
+</script>
+</body>
+</html>
