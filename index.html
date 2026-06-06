@@ -82,6 +82,14 @@
   .crest .sg:hover .tapln,.crest .sg:focus .tapln{color:var(--gold-bright)}
   .crest .sg:hover .orb,.crest .sg:focus .orb{box-shadow:0 0 0 4px var(--oc),0 0 22px var(--oc)}
   .crest .cross{font-size:20px;color:var(--gold-dim)}
+  .numcalc{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    margin:0 30px 4px;padding:14px 18px;border:1px solid var(--border);border-radius:10px;
+    background:rgba(203,166,83,.04)}
+  .numcalc.pending{color:var(--ink-faint);font-style:italic;font-size:13.5px;justify-content:center}
+  .numcalc .nc-item{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .numcalc .nc-l{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink-faint)}
+  .numcalc .nc-v{font-family:'Cinzel',serif;font-size:20px;color:var(--gold-bright);line-height:1}
+  .numcalc .nc-op{font-size:15px;color:var(--gold-dim)}
   .hero .greet{font-size:17px;color:var(--ink-dim);margin-top:14px;font-style:italic}
   .hero .today{font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;color:var(--ink-faint);text-transform:uppercase;margin-top:6px}
 
@@ -177,6 +185,8 @@ const MESES=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto
 const el=id=>document.getElementById(id);
 let CUR={P:null,D:null};
 const esc=s=>(s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// Digital root of a non-negative integer (repeated digit sum). dr(0)=0.
+function digitalRoot(n){ n=Math.abs(Math.trunc(n)); return n===0?0:1+(n-1)%9; }
 
 async function consultar(){
   const nombre=el('nombre').value.trim();
@@ -266,6 +276,26 @@ function closeSpirit(){
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSpirit();});
 
+// Build the número computation block for the P×D pair (or a pending note).
+function numCalcHTML(P,D){
+  const pn=(P.numero===null||P.numero===undefined||P.numero==='')?null:P.numero;
+  const dn=(D.numero===null||D.numero===undefined||D.numero==='')?null:D.numero;
+  if(pn===null||dn===null){
+    return `<div class="numcalc pending">El número de este encuentro aún no está definido.</div>`;
+  }
+  const prod=pn*dn, root=digitalRoot(prod);
+  const chip=(lbl,val)=>`<div class="nc-item"><span class="nc-l">${lbl}</span><span class="nc-v">${val}</span></div>`;
+  return `<div class="numcalc">
+    ${chip(esc(P.nombre),pn)}
+    <span class="nc-op">×</span>
+    ${chip(esc(D.nombre),dn)}
+    <span class="nc-op">=</span>
+    ${chip('Producto',prod)}
+    <span class="nc-op">→</span>
+    ${chip('Raíz digital',root)}
+  </div>`;
+}
+
 function render(nombre,d){
   const P=d.signo_personal, D=d.signo_dia, C=d.combinacion, I=d.interaccion_elemental;
   if(!P){el('err').textContent='No encontramos un signo para esa fecha.';return;}
@@ -317,6 +347,8 @@ function render(nombre,d){
         <div class="greet">${esc(nombre)}, naciste bajo <b style="color:var(--gold-bright)">${esc(P.nombre)}</b> y hoy vibra <b style="color:var(--gold-bright)">${esc(D.nombre)}</b></div>
         <div class="today">${fechaTxt}</div>
       </div>
+
+      ${numCalcHTML(P,D)}
 
       ${comboHTML}
 
